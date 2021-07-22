@@ -18,11 +18,11 @@ REQUEST_HEADERS = {
 dynamoDB = boto3.resource('dynamodb')
 table = dynamoDB.Table('lock_status')
 
-def operation_put(sortKey):
+def operation_put(status_num):
     putResponse = table.put_item(
         Item={
             'id': 'status',
-            'status_num': sortKey
+            'status_num': status_num
         }
     )
     if putResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
@@ -39,11 +39,11 @@ def lambda_handler(event, context):
         reply_token = message_event['replyToken']
 
     if key_info == "解錠":
-        sortKey = 1
+        status_num = 1
         message = "解錠完了"
 
     elif key_info == "施錠":
-        sortKey = 0
+        status_num = 0
         message = "施錠完了"
 
     else:
@@ -65,4 +65,4 @@ def lambda_handler(event, context):
             headers=REQUEST_HEADERS
             )
     response = urllib.request.urlopen(request, timeout=10)
-    return operation_put(sortKey)
+    return operation_put(status_num)
