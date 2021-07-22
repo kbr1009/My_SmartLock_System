@@ -16,35 +16,36 @@ REQUEST_HEADERS = {
         }
 
 dynamoDB = boto3.resource('dynamodb')
-table = dynamoDB.Table('lock_status')
+table = dynamoDB.Table('MyLock')
 
-def operation_put(status_num):
+def operation_put(lock_status):
     putResponse = table.put_item(
         Item={
-            'id': 'status',
-            'status_num': status_num
+            'id': 1,
+            'lock_status': lock_status
         }
     )
     if putResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
         print(putResponse)
     else:
        print('PUT Successed.')
-    return putResponse 
+    return putResponse
 
 def lambda_handler(event, context):
     logger.info(event)
+
 
     for message_event in json.loads(event['body'])['events']:
         key_info = message_event['message']['text']
         reply_token = message_event['replyToken']
 
     if key_info == "解錠":
-        status_num = 1
-        message = "解錠完了"
+        lock_status = "開"
+        message = "鍵あけたよ"
 
     elif key_info == "施錠":
-        status_num = 0
-        message = "施錠完了"
+        lock_status = "閉"
+        message = "鍵かけたよ"
 
     else:
         message = "Fuck you!"
@@ -65,4 +66,4 @@ def lambda_handler(event, context):
             headers=REQUEST_HEADERS
             )
     response = urllib.request.urlopen(request, timeout=10)
-    return operation_put(status_num)
+    return operation_put(lock_status)
