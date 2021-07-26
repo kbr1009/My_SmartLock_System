@@ -27,10 +27,6 @@ def operation_put(status, timestamp):
             'timestamp': timestamp
         }
     )
-    if putResponse['ResponseMetadata']['HTTPStatusCode'] != 200:
-        print(putResponse)
-    else:
-       print('PUT Successed.')
     return putResponse
 
 
