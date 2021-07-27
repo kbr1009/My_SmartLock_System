@@ -18,7 +18,7 @@ def operation_get():
 
 
 def lambda_handler(event, context):
-    topic = 'reo/lambda_iot'
+    topic = 'reo/smartlock'
     latest_status = operation_get()
 
     if  latest_status == "Open":
@@ -40,4 +40,4 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(e)
-        return "Failed."
+        return "Shit! Failed."
