@@ -19,6 +19,3 @@ open https://aws.amazon.com/jp/builders-flash/202101/smart-treasure-box/?awsf.fi
 open https://www.tdi.co.jp/miso/realtimefeedbacksystem-linebot
 open https://qiita.com/rockguitar67/items/3fd2d5021e92584f95b4#%E7%9B%AE%E6%A8%99
 open https://recipe.kc-cloud.jp/archives/10348
-
-open ./設計図/自作スマートロック設計変更済.drawio
-
