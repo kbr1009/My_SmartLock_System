@@ -1,4 +1,4 @@
-dev_memo.txt
 .DS_Store
-smartlock_esp32.ino
-aws_key.png
+dev_memo.txt
+KEY/
+src/ESP32_src/
