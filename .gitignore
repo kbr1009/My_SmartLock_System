@@ -1,4 +1,5 @@
 .DS_Store
 dev_memo.txt
 KEY/
-src/ESP32_src/
+src/Phase1/ESP32/
+src/Phase2/ESP32/
