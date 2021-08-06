@@ -74,6 +74,8 @@ void connectAWSIoT() {
     }
 }
   
+char pubMessage[128];
+
 void mqttCallback (char* topic, byte* payload, unsigned int length) {
     Serial.print("Received. topic=");
     Serial.println(topic);
@@ -87,23 +89,37 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
     const char* Switch = doc["Switch"];
     String order = String(Switch);
     if (order == "Unlock"){
-      myservo.write(90);
+      //myservo.write(100);
+      myservo.write(92);
+      //sprintf(pubMessage, "{\"message\": \"Unlocked\"}");
+      sprintf(pubMessage, "Unlocked");
+      Serial.print("Publishing message to topic ");
+      Serial.println(pubTopic);
+      Serial.println(pubMessage);
+      mqttClient.publish(pubTopic, pubMessage);
+     Serial.println("Published.");
     }
     if (order == "Lock"){
-      myservo.write(0);
+      //myservo.write(12);
+      myservo.write(3);
+      //sprintf(pubMessage, "{\"message\": \"Locked\"}");
+      sprintf(pubMessage, "Locked");
+      Serial.print("Publishing message to topic ");
+      Serial.println(pubTopic);
+      Serial.println(pubMessage);
+      mqttClient.publish(pubTopic, pubMessage);
+      Serial.println("Published.");
     }
 }
-  
+
 void mqttLoop() {
     if (!mqttClient.connected()) {
         connectAWSIoT();
     }
     mqttClient.loop();
     delay(100);
-    Serial.print(".");
 }
   
 void loop() {
   mqttLoop();
-  delay(1000);
-}
+} 
