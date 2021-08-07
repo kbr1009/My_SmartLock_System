@@ -26,13 +26,11 @@ def operation_get():
     return get_reply_token
 
 def lambda_handler(event, context):
-
-    latest_data = operation_get()
-    reply_token = latest_data
-    message = "ok"
+    reply_token = operation_get()
+    message = "完了！"
 
     params = {
-            'replyToken': reply_token,
+           'replyToken': reply_token,
             'messages': [
                 {
                     'type': 'text',
@@ -47,4 +45,4 @@ def lambda_handler(event, context):
             headers=REQUEST_HEADERS
             )
     response = urllib.request.urlopen(request, timeout=10)
-    return "Succeeeded."
+    return "Succeeeded." 
