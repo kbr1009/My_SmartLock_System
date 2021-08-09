@@ -13,7 +13,6 @@ REQUEST_HEADERS = {
         }
 dynamoDB = boto3.resource('dynamodb')
 table = dynamoDB.Table('IotData')
-table_pub = dynamoDB.Table('MyPubData')
 
 
 def operation_get():
@@ -30,7 +29,7 @@ def lambda_handler(event, context):
     message = "完了！"
 
     params = {
-           'replyToken': reply_token,
+            'replyToken': reply_token,
             'messages': [
                 {
                     'type': 'text',
@@ -45,4 +44,4 @@ def lambda_handler(event, context):
             headers=REQUEST_HEADERS
             )
     response = urllib.request.urlopen(request, timeout=10)
-    return "Succeeeded." 
+    return "Succeeeded."
