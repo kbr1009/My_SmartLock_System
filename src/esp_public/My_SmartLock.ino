@@ -85,8 +85,8 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
 //subsclibeされたjsonを読み取り
     StaticJsonDocument<64> doc;
     deserializeJson(doc, payload);
-    const char* Switch = doc["Switch"];
-    String order = String(Switch);
+    const char* Order = doc["Order"];
+    String order = String(Order);
 
 //publishするjsonの組み立て
     const int capacity = JSON_OBJECT_SIZE(8);
@@ -95,7 +95,7 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
     
     if (order == "Unlock"){
       myservo.write(92);
-      key_status["status"] = "Unlocked";
+      key_status["Status"] = "Unlocked";
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
@@ -107,7 +107,7 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
     }
     if (order == "Lock"){
       myservo.write(3);
-      key_status["status"] = "Locked";
+      key_status["Status"] = "Locked";
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
