@@ -41,6 +41,23 @@ def operation_get():
     get_timestamp = getResponse['Item']['timestamp']
     return get_status, get_timestamp
 
+
+def pub_iotcore(payload):
+    iot = boto3.client('iot-data')
+    topic = '$aws/things/reo_smartkey/shadow/key_order/update'
+    try:
+        iot.publish(
+            topic=topic,
+            qos=0,
+            payload=json.dumps(payload, ensure_ascii=False)
+        )
+        return "Succeeeded."
+
+    except Exception as e:
+        print(e)
+        return "Shit! Failed."
+
+
 def reply_func(reply_token, message):
     params = {
             'replyToken': reply_token,
@@ -80,12 +97,17 @@ def lambda_handler(event, context):
             reply_func(reply_token, message)
         else:
             status = "Open"
+            payload = {
+            "Order": "Unlock"
+            }
 
     elif key_info == "施錠":
 
         if latest_status == "Open":
             status = "Close"
-
+            payload = {
+            "Order": "Lock"
+            }
         else:
             message = latest_timestamp + "に閉めてあるよ"
             reply_func(reply_token, message)
@@ -94,4 +116,4 @@ def lambda_handler(event, context):
         message = "Fuck you!"
         reply_func(reply_token, message)
 
-    return operation_put(status, timestamp, reply_token)
+    return operation_put(status, timestamp, reply_token), pub_iotcore(payload)
