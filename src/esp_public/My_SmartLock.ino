@@ -74,43 +74,52 @@ void connectAWSIoT() {
     }
 }
   
-char pubMessage[128];
-
 void mqttCallback (char* topic, byte* payload, unsigned int length) {
     Serial.print("Received. topic=");
     Serial.println(topic);
- for (int i = 0; i < length; i++) {
-        Serial.print((char)payload[i]);
+    for (int i = 0; i < length; i++) {
+      Serial.print((char)payload[i]);
     }
     Serial.print("\n");
-    
+
+//subsclibeされたjsonを読み取り
     StaticJsonDocument<64> doc;
     deserializeJson(doc, payload);
     const char* Switch = doc["Switch"];
     String order = String(Switch);
+
+//publishするjsonの組み立て
+    const int capacity = JSON_OBJECT_SIZE(8);
+    StaticJsonDocument<capacity> key_status;
+    char jsonBuffer[512];
+    
     if (order == "Unlock"){
-      //myservo.write(100);
       myservo.write(92);
-      //sprintf(pubMessage, "{\"message\": \"Unlocked\"}");
-      sprintf(pubMessage, "Unlocked");
+      key_status["status"] = "Unlocked";
+      serializeJson(key_status, jsonBuffer);
+      mqttClient.publish(pubTopic, jsonBuffer);
+      
       Serial.print("Publishing message to topic ");
       Serial.println(pubTopic);
-      Serial.println(pubMessage);
-      mqttClient.publish(pubTopic, pubMessage);
-     Serial.println("Published.");
+      Serial.println(jsonBuffer);
+      //mqttClient.publish(pubTopic, pubMessage);
+      Serial.println("Published.");
     }
     if (order == "Lock"){
-      //myservo.write(12);
       myservo.write(3);
-      //sprintf(pubMessage, "{\"message\": \"Locked\"}");
-      sprintf(pubMessage, "Locked");
+      key_status["status"] = "Locked";
+      serializeJson(key_status, jsonBuffer);
+      mqttClient.publish(pubTopic, jsonBuffer);
+      
       Serial.print("Publishing message to topic ");
       Serial.println(pubTopic);
-      Serial.println(pubMessage);
-      mqttClient.publish(pubTopic, pubMessage);
+      Serial.println(jsonBuffer);
+      //mqttClient.publish(pubTopic, pubMessage);
       Serial.println("Published.");
     }
 }
+//publishするjsonの組み立ては以下を参照
+//https://www.souichi.club/m5stack/m5stickc-aws-iot-core/
 
 void mqttLoop() {
     if (!mqttClient.connected()) {
@@ -122,4 +131,4 @@ void mqttLoop() {
   
 void loop() {
   mqttLoop();
-} 
+}
