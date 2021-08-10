@@ -1,5 +1,6 @@
  
 # 駆動設計
+ フロントはLINE、バックエンドはawsのサーバレスアーキテクチャ、鍵はesp32を使用。
 <div align="center">
  <img src="https://readme-img.s3.ap-northeast-1.amazonaws.com/img/SmartLock_%E8%A8%AD%E8%A8%88%E5%9B%B3.png">
 </div>
