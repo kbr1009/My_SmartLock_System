@@ -36,7 +36,7 @@ void setup() {
     Serial.begin(115200);
   
     // Start WiFi
-    Serial.println("Connecting to ");
+    Serial.println("次のWi-Fiに接続。");
     Serial.print(ssid);
     WiFi.begin(ssid, password);
   
@@ -44,7 +44,7 @@ void setup() {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("\nConnected.");
+    Serial.println("\n接続完了。");
   
     // Configure MQTT Client
     httpsClient.setCACert(rootCA);
@@ -61,10 +61,10 @@ void setup() {
 void connectAWSIoT() {
     while (!mqttClient.connected()) {
         if (mqttClient.connect("******")) {
-            Serial.println("Connected.");
+            Serial.println("AWSIoTへの接続完了。");
             int qos = 0;
             mqttClient.subscribe(subTopic, qos);
-            Serial.println("Subscribed.");
+            Serial.println("subscribe完了");
         } else {
             Serial.print("Failed. Error state=");
             Serial.print(mqttClient.state());
@@ -89,8 +89,7 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
     String order = String(Order);
 
 //publishするjsonの組み立て
-    const int capacity = JSON_OBJECT_SIZE(8);
-    StaticJsonDocument<capacity> key_status;
+    StaticJsonDocument<64> key_status;
     char jsonBuffer[512];
     
     if (order == "Unlock"){
@@ -99,11 +98,10 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
-      Serial.print("Publishing message to topic ");
+      Serial.print("解錠完了メッセージ");
       Serial.println(pubTopic);
       Serial.println(jsonBuffer);
-      //mqttClient.publish(pubTopic, pubMessage);
-      Serial.println("Published.");
+      Serial.println("Publish完了。");
     }
     if (order == "Lock"){
       myservo.write(3);
@@ -111,11 +109,10 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
-      Serial.print("Publishing message to topic ");
+      Serial.print("施錠完了メッセージ");
       Serial.println(pubTopic);
       Serial.println(jsonBuffer);
-      //mqttClient.publish(pubTopic, pubMessage);
-      Serial.println("Published.");
+      Serial.println("Publish完了");
     }
 }
 //publishするjsonの組み立ては以下を参照
