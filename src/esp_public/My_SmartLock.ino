@@ -8,22 +8,22 @@
 char *ssid = "******";
 char *password = "******";
   
-const char *endpoint = "******.iot.ap-northeast-1.amazonaws.com";
+const char *endpoint = "******";
 
 const int port = 8883;
 char *pubTopic = "$aws/things/******/shadow/******/update/delta";
 char *subTopic = "$aws/things/******/shadow/******/update";
   
 const char* rootCA = "-----BEGIN CERTIFICATE-----\n" \
-
+"**********\n"
 "-----END CERTIFICATE-----\n";
   
 const char* certificate = "-----BEGIN CERTIFICATE-----\n" \
-
+"**********\n"
 "-----END CERTIFICATE-----\n";
   
 const char* privateKey = "-----BEGIN RSA PRIVATE KEY-----\n" \
-
+"**********\n"
 "-----END RSA PRIVATE KEY-----\n";
   
 WiFiClientSecure httpsClient;
@@ -32,11 +32,13 @@ PubSubClient mqttClient(httpsClient);
 //Servoオブジェクトを作成
 Servo myservo;
 
+
+
 void setup() {
     Serial.begin(115200);
   
     // Start WiFi
-    Serial.println("次のWi-Fiに接続。");
+    Serial.println(F("次のWi-Fiに接続。"));
     Serial.print(ssid);
     WiFi.begin(ssid, password);
   
@@ -44,7 +46,7 @@ void setup() {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("\n接続完了。");
+    Serial.println(F("\n接続完了。"));
   
     // Configure MQTT Client
     httpsClient.setCACert(rootCA);
@@ -60,13 +62,13 @@ void setup() {
   
 void connectAWSIoT() {
     while (!mqttClient.connected()) {
-        if (mqttClient.connect("******")) {
-            Serial.println("AWSIoTへの接続完了。");
+        if (mqttClient.connect("reo_smartkey")) {
+            Serial.println(F("AWSIoTへの接続完了。"));
             int qos = 0;
             mqttClient.subscribe(subTopic, qos);
-            Serial.println("subscribe完了");
+            Serial.println(F("subscribe完了"));
         } else {
-            Serial.print("Failed. Error state=");
+            Serial.print(F("Failed. Error state="));
             Serial.print(mqttClient.state());
             // Wait 5 seconds before retrying
             delay(5000);
@@ -75,7 +77,7 @@ void connectAWSIoT() {
 }
   
 void mqttCallback (char* topic, byte* payload, unsigned int length) {
-    Serial.print("Received. topic=");
+    Serial.print(F("Received. topic="));
     Serial.println(topic);
     for (int i = 0; i < length; i++) {
       Serial.print((char)payload[i]);
@@ -98,10 +100,10 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
-      Serial.print("解錠完了メッセージ");
+      Serial.println(F("解錠完了メッセージ"));
       Serial.println(pubTopic);
       Serial.println(jsonBuffer);
-      Serial.println("Publish完了。");
+      Serial.println(F("Publish完了。"));
     }
     if (order == "Lock"){
       myservo.write(3);
@@ -109,10 +111,21 @@ void mqttCallback (char* topic, byte* payload, unsigned int length) {
       serializeJson(key_status, jsonBuffer);
       mqttClient.publish(pubTopic, jsonBuffer);
       
-      Serial.print("施錠完了メッセージ");
+      Serial.print(F("施錠完了メッセージ"));
       Serial.println(pubTopic);
       Serial.println(jsonBuffer);
-      Serial.println("Publish完了");
+      Serial.println(F("Publish完了"));
+    }
+    if (order == "Reboot"){
+      key_status["Status"] = "Rebooted";
+      serializeJson(key_status, jsonBuffer);
+      mqttClient.publish(pubTopic, jsonBuffer);
+      
+      Serial.println(pubTopic);
+      Serial.println(jsonBuffer);
+      Serial.println(F("Publish完了"));      
+      Serial.println(F("再起動"));
+      ESP.restart();
     }
 }
 //publishするjsonの組み立ては以下を参照
