@@ -3,7 +3,6 @@ import os
 import urllib.request
 import logging
 import boto3
-import datetime
 
 
 logger = logging.getLogger()
@@ -19,12 +18,10 @@ dynamoDB = boto3.resource('dynamodb')
 table = dynamoDB.Table('IotData')
 
 
-def operation_put(status, timestamp, reply_token):
+def operation_put(reply_token):
     putResponse = table.put_item(
         Item={
             'id': 1,
-            'status': status,
-            'timestamp': timestamp,
             'replyToken': reply_token
         }
     )
@@ -34,12 +31,11 @@ def operation_put(status, timestamp, reply_token):
 def operation_get():
     getResponse = table.get_item(
         Key={
-            'id': 1
+            'id': 2
         }
     )
     get_status = getResponse['Item']['status']
-    get_timestamp = getResponse['Item']['timestamp']
-    return get_status, get_timestamp
+    return get_status
 
 
 def pub_iotcore(payload):
@@ -56,7 +52,6 @@ def pub_iotcore(payload):
     except Exception as e:
         print(e)
         return "Shit! Failed."
-
 
 def reply_func(reply_token, message):
     params = {
@@ -76,44 +71,24 @@ def reply_func(reply_token, message):
             )
     response = urllib.request.urlopen(request, timeout=10)
 
-
 def lambda_handler(event, context):
     logger.info(event)
-    diff_time = 9
-    date_info = datetime.datetime.utcnow() + datetime.timedelta(hours = diff_time)
-    timestamp = date_info.strftime('%m月%d日 %H:%M:%S')
-    latest_data = operation_get()
-    latest_status = latest_data[0]
-    latest_timestamp = latest_data[1]
 
     for message_event in json.loads(event['body'])['events']:
         key_info = message_event['message']['text']
         reply_token = message_event['replyToken']
     
-    if key_info == "解錠":
+    latest_status = operation_get()
 
+    if key_info == "Fire!":
         if latest_status == "Open":
-            message = latest_timestamp + "に開けてあるよ"
-            reply_func(reply_token, message)
-        else:
-            status = "Open"
-            payload = {
-            "Order": "Unlock"
-            }
-
-    elif key_info == "施錠":
-
-        if latest_status == "Open":
-            status = "Close"
-            payload = {
-            "Order": "Lock"
-            }
-        else:
-            message = latest_timestamp + "に閉めてあるよ"
-            reply_func(reply_token, message)
-
+            payload = {"Order": "Lock"}
+        if latest_status == "Close":
+            payload = {"Order": "Unlock"}
+    elif key_info == "reboot":
+        payload = {"Order": "Reboot"}
     else:
         message = "Fuck you!"
         reply_func(reply_token, message)
 
-    return operation_put(status, timestamp, reply_token), pub_iotcore(payload)
+    return operation_put(reply_token), pub_iotcore(payload)

@@ -2,6 +2,7 @@ import json
 import os
 import urllib.request
 import boto3
+import datetime
 
 
 LINE_CHANNEL_ACCESS_TOKEN   = os.environ['LINE_CHANNEL_ACCESS_TOKEN']
@@ -14,7 +15,6 @@ REQUEST_HEADERS = {
 dynamoDB = boto3.resource('dynamodb')
 table = dynamoDB.Table('IotData')
 
-
 def operation_get():
     getResponse = table.get_item(
         Key={
@@ -23,11 +23,26 @@ def operation_get():
     )
     get_reply_token = getResponse['Item']['replyToken']
     return get_reply_token
+    
+def status_put(status):
+    putResponse = table.put_item(
+        Item={
+            'id': 2,
+            'status': status
+        }
+    )
+    return putResponse
+    
+def reboottime_put(timestamp):
+    putResponse = table.put_item(
+        Item={
+            'id': 3,
+            'reboot_time': timestamp
+        }
+    )
+    return putResponse
 
-def lambda_handler(event, context):
-    reply_token = operation_get()
-    message = "完了！"
-
+def reply_func(reply_token, message):
     params = {
             'replyToken': reply_token,
             'messages': [
@@ -44,4 +59,24 @@ def lambda_handler(event, context):
             headers=REQUEST_HEADERS
             )
     response = urllib.request.urlopen(request, timeout=10)
-    return "Succeeeded."
+
+def lambda_handler(event, context):
+    reply_token = operation_get()
+    pubdata = str(event['Status'])
+    
+    if pubdata == "Locked":
+        status = "Close"
+        message = "Locked"
+
+    if pubdata == "Unlocked":
+        status = "Open"
+        message = "Unlocked"
+    
+    if pubdata == "Rebooted":
+        diff_time = 9
+        date_info = datetime.datetime.utcnow() + datetime.timedelta(hours = diff_time)
+        timestamp = date_info.strftime('%m月%d日 %H:%M:%S')
+        message = timestamp + "に再起動済"
+        reboottime_put(timestamp)
+    
+    return reply_func(reply_token, message), status_put(status)
